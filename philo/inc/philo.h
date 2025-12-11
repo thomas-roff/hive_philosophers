@@ -13,7 +13,12 @@
 #ifndef philo_H
 # define philo_H
 
-# include "libft.h"
+# include <stdio.h>
+# include <libc.h>
+# include <stdlib.h>
+# include <unistd.h>
+# include <sys/time.h>
+# include <pthread.h>
 
 // CODES FOR ERROR TRACKING
 // SUCCESSFUL EXECUTION

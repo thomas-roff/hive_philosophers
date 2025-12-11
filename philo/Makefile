@@ -45,7 +45,6 @@ CGENERAL	= -O2
 CFAST		= -O3
 CDEBUG		= -g -O0
 MAKE_QUIET	= --no-print-directory
-MAKE_LIB	= make -C
 
 # REMOVE
 RMFILE = rm -f
@@ -54,22 +53,15 @@ RMDIR = rm -rf
 # MAKE DIRECTORY
 MKDIR		= mkdir -p
 
-# LIBFT LINKING
-LIBFT_DIR	= ./libft
-LIBFT_H		= $(LIBFT_DIR)/inc/libft.h
-LIBFT_A		= $(LIBFT_DIR)/libft.a
-
 # INCLUDE PATHS AND LIBRARIES
-INC			= -I. -I$(LIBFT_DIR) -I$(LIBFT_DIR)/inc -I$(INC_DIR)
-LIBFT		= -L$(LIBFT_DIR) -lft
-LIBS		= $(LIBFT)
+INC			= -I. -I$(INC_DIR)
+LIBS		= 
 
 # MESSAGES
 START		= @echo "==== THOMASROFF MAKEFILE =============" \
 			  && echo "==== STARTED: $(shell date '+%Y-%m-%d %H:%M:%S') ===="
 BUILD_PROJ	= @echo "==== BUILDING $(PROJECT) ===============" \
 				&& echo "compiling in $(MODE) mode"
-BUILD_LIBFT	= @echo "==== BUILDING LIBFT =================="
 COMPILED	= @echo "$(PROJECT) compiled successfully"
 FINISH		= @echo "==== BUILD COMPLETE ==================" \
 			  && echo "==== FINISHED: $(shell date '+%Y-%m-%d %H:%M:%S') ==="
@@ -92,10 +84,6 @@ $(NAME): $(OBJ) $(LIBFT_A)
 	$(COMPILED)
 	$(FINISH)
 
-$(LIBFT_A):
-	@$(MAKE_LIB) $(LIBFT_DIR) $(MAKE_QUIET)
-	$(SPACER)
-
 $(OBJ_DIRS):
 	@$(MKDIR) $@
 
@@ -117,14 +105,12 @@ release:
 clean:
 	@echo "Removing object files"
 	@$(RMDIR) obj
-	@$(MAKE_LIB) libft clean $(MAKE_QUIET)
 
 fclean:
 	@echo "Removing object files"
 	@$(RMDIR) obj
 	@echo "Removing static library files"
 	@$(RMFILE) $(NAME)
-	@$(MAKE_LIB) libft fclean $(MAKE_QUIET)
 
 re: fclean all
 
