@@ -13,6 +13,7 @@
 #ifndef PHILO_H
 # define PHILO_H
 
+#include <signal.h>
 # include <stdio.h>
 # include <libc.h>
 # include <stdlib.h>
@@ -29,18 +30,28 @@
 
 typedef struct s_philo
 {
+  uint32_t  x;
+  uint32_t  ate;
+} t_philo;
+
+typedef struct s_vars
+{
   uint32_t  n;
   uint32_t  die;
   uint32_t  eat;
   uint32_t  sleep;
   uint32_t  fed;
-} t_philo;
+  sig_atomic_t  i;
+  pthread_t *t;
+  sig_atomic_t	*f;
+  pthread_mutex_t m;
+} t_vars;
 
 // philo
 
 // Initialisation
 bool	valid_input(char **argv);
-bool	parse_args(t_philo *p, char **argv);
+bool	parse_args(t_vars *p, char **argv);
 
 // Utilities
 int	    ft_isdigit(int c);
