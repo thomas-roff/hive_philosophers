@@ -76,9 +76,11 @@ bool	did_you_starve(t_philo *p, t_vars *v)
 	if (gettimeofday(&time, NULL) == -1)
 		return (false);
 	elapsed = (time.tv_sec - p->ate_s) * 1000000 + (time.tv_usec - p->ate_u);
+	// printf("elapsed time is: %lld\n", elapsed);
 	if (elapsed > v->die)
 	{
-		printf("%ld.%u %u died\n", time.tv_sec, time.tv_usec, p->x);
+		printf("%ld.%06u %u died\n", time.tv_sec, time.tv_usec, p->x);
+		v->end = true;
 		return (true);
 	}
 	return (false);
@@ -118,9 +120,9 @@ int	take_cutlery(t_philo *p, t_vars *v)
 	if (*p->f1 == false && *p->f2 == false)
 	{
 		*p->f1 = true;
-		printf("%ld.%u %u has taken a fork\n", time.tv_sec, time.tv_usec, p->x);
+		printf("%ld.%06u %u has taken a fork\n", time.tv_sec, time.tv_usec, p->x);
 		*p->f2 = true;
-		printf("%ld.%u %u has taken a fork\n", time.tv_sec, time.tv_usec, p->x);
+		printf("%ld.%06u %u has taken a fork\n", time.tv_sec, time.tv_usec, p->x);
 		flag = SUCCESS;
 	}
 	else
@@ -130,29 +132,63 @@ int	take_cutlery(t_philo *p, t_vars *v)
 	return (flag);
 }
 
-int	go_eat(t_philo *p, t_vars *v)
+int	ft_strcmp(const char *s1, const char *s2)
+{
+	unsigned char	*s1c;
+	unsigned char	*s2c;
+	size_t			i;
+
+	s1c = (unsigned char *)s1;
+	s2c = (unsigned char *)s2;
+	i = 0;
+	while (s1c[i] != '\0' || s2c[i] != '\0')
+	{
+		if (s1c[i] != s2c[i])
+			return (s1c[i] - s2c[i]);
+		i++;
+	}
+	if (s1c[i] || s2c[i])
+		return (-1);
+	return (0);
+}
+
+int		what_you_doing(char *s, t_philo *p)
 {
 	struct timeval	time;
+
+	if (gettimeofday(&time, NULL) == -1)
+		return (FAIL);
+	printf("%ld.%06u %u is %s\n", time.tv_sec, time.tv_usec, p->x, s);
+	if (s[0] == 's')
+	{
+		p->ate_s = time.tv_sec;
+		p->ate_u = time.tv_usec;
+	}
+	return (SUCCESS);
+}
+
+int	go_eat(t_philo *p, t_vars *v)
+{
 	int				flag;
 
 	flag = take_cutlery(p, v);
 	if (flag != SUCCESS)
 		return (flag);
-	if (gettimeofday(&time, NULL) == -1)
+	if (!what_you_doing("eating", p))
 		return (ERROR);
-	printf("%ld.%u %u is eating\n", time.tv_sec, time.tv_usec, p->x);
 	usleep(v->eat);
+	if (v->end == true)
+		return (FAIL);
+	p->meals++;
 	if (return_cutlery(p, v) != SUCCESS)
 		return (ERROR);
-	if (gettimeofday(&time, NULL) == -1)
+	if (!what_you_doing("sleeping", p))
 		return (ERROR);
-	p->ate_s = time.tv_sec;
-	p->ate_u = time.tv_usec;
-	printf("%ld.%u %u is sleeping\n", time.tv_sec, time.tv_usec, p->x);
 	usleep(v->sleep);
-	if (gettimeofday(&time, NULL) == -1)
+	if (v->end == true)
+		return (FAIL);
+	if (!what_you_doing("thinking", p))
 		return (ERROR);
-	printf("%ld.%u %u is thinking\n", time.tv_sec, time.tv_usec, p->x);
 	return (SUCCESS);
 }
 
@@ -165,14 +201,20 @@ void	*philosophise(void *data)
 	v = data;
 	if (!philo_init(&p, v))
 		return (0);
-	printf("%ld.%u %u is here\n", p.ate_s, p.ate_u, p.x);
+	printf("%ld.%06u %u is here\n", p.ate_s, p.ate_u, p.x);
 	while (1)
 	{
-		if (v->end == true || (p.meals >= v->fed && v->fed > 0)
+		if (p.meals >= v->fed && v->fed > 0)
+		{
+			// printf("%ld.%06u %u was fed\n", p.ate_s, p.ate_u, p.x);
+			return (0);
+		}
+		if (v->end == true
 			|| did_you_starve(&p, v))
 			return (0);
-		if (v->end == false && p.state == 't' && p.f1 == false && p.f2 == false)
+		if (v->end == false && p.state == 't' && *p.f1 == false && *p.f2 == false)
 		{
+			// printf("%u got here\n", p.x);
 			flag = go_eat(&p, v);
 			if (flag == FAIL)
 				return (0); // I would like to return (flag); here but how from thread?
