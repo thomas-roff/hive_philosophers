@@ -6,7 +6,7 @@
 /*   By: thblack- <thblack-@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 18:07:57 by thblack-          #+#    #+#             */
-/*   Updated: 2025/12/13 13:06:25 by thblack-         ###   ########.fr       */
+/*   Updated: 2025/12/14 12:26:48 by thblack-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 // Conversion to hold seconds and miliseconds in one variable
 # define USEC_PER_SEC 1000000LL
 // Char check for updating last meal time
-# define SAVOURING 'v'
+# define SLEEPING 'l'
 
 // Struct for each philosopher
 // x: unique number of each philosopher
@@ -53,9 +53,10 @@ typedef struct s_philo
 	uint32_t		meals;
 	atomic_ulong	ate_s;
 	atomic_uint		ate_u;
-	atomic_char		state;
-	atomic_bool		*f1;
-	atomic_bool		*f2;
+	atomic_bool		*fork_l;
+	atomic_bool		*fork_r;
+	pthread_mutex_t	lock_l;
+	pthread_mutex_t	lock_r;
 }	t_philo;
 
 // Struct for shared program variables
@@ -69,7 +70,7 @@ typedef struct s_philo
 // end: flag to end simulation if a philosopher dies
 // t: system IDs of all threads
 // m: mutex lock
-typedef struct s_vars
+typedef struct s_data
 {
 	uint32_t		n;
 	uint32_t		die;
@@ -81,24 +82,24 @@ typedef struct s_vars
 	atomic_bool		end;
 	pthread_t		*t;
 	pthread_mutex_t	m;
-}	t_vars;
+}	t_data;
 
 // philo
-void	clean_up(t_vars *v);
+void	philo_main_exit(t_data *v);
 
 // Initialisation
-bool	parse_args(t_vars *p, char **argv);
+bool	parse_args(t_data *p, char **argv);
 
 // Threads
-bool	threads_and_forks_init(t_vars *v);
-bool	threads_run(t_vars *v);
-bool	threads_join(t_vars *v);
+bool	threads_and_forks_init(t_data *v);
+bool	threads_run(t_data *v);
+bool	threads_join(t_data *v);
 
 // Philosophise
 void	*philosophise(void *data);
 
 // Do Things
-int		go_eat(t_philo *p, t_vars *v);
+int		go_eat(t_philo *p, t_data *v);
 
 // Utilities
 int		ft_isdigit(int c);
@@ -107,5 +108,6 @@ int		ft_isspace(int c);
 bool	ft_naun(const char *nptr);
 bool	ft_atoui(unsigned int *nbr, const char *nptr);
 size_t	ft_strlen(const char *s);
+int		ft_error(char *s, t_data *data);
 
 #endif
